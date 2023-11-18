@@ -4,29 +4,34 @@ import pandas as pd
 import streamlit as st
 
 def create_or_connect_database():
-    conn = sqlite3.connect('/tmp/consult.db')
-    cursor = conn.cursor()
+  conn = sqlite3.connect('/tmp/consult.db')
+  cursor = conn.cursor()
 
-    f = io.open('./tabelas.sql', 'r', encoding='utf-8')
-    sql = f.read()
+  f = io.open('./tabelas.sql', 'r', encoding='utf-8')
+  sql = f.read()
+  try:
     cursor.executescript(sql)
+  except sqlite3.Error as e:
+    print("SQLite error:", e)
 
-    tables = ['OCORRENCIA', 'ACIDENTE', 'AERODROMO', 'AERONAVE', 'DESCRICAO', 'LOCAL']
-    for table in tables:
-        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}';")
-        if not cursor.fetchone():
-            raise ValueError(f"A tabela {table} não existe no banco de dados")
+  tables = ['OCORRENCIA', 'ACIDENTE', 'AERODROMO', 'AERONAVE', 'DESCRICAO', 'LOCAL']
+  for table in tables:
+    cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}';")
+    if not cursor.fetchone():
+      raise ValueError(f"A tabela {table} não existe no banco de dados")
 
-    return conn
+  return conn
 
 def main():
   st.title("Ocorrências Aeronáuticas")
 
-  block_op = st.selectbox('Selecione a consulta: ', ['ano_morte_tripulantes', 'regiao_ocorrencia_acidentes', 'fabricantes_falha_componentes',
-                                                     'categ_aeronaves_mais_trip_ilesos', 'horarios_maior_ocorrencia', 'aerodromo_acidentes_mais_graves',
-                                                     'frequencias_ocorrencias', 'rotas_casos_fatais_excursao'])
-
-  conn = create_or_connect_database()
+  block_op = st.selectbox('Selecione a consulta: ', ['ano_morte_tripulantes', 'regiao_ocorrencia_acidentes', 'fabricantes_falha_componentes', 'categ_aeronaves_mais_trip_ilesos', 'horarios_maior_ocorrencia', 'aerodromo_acidentes_mais_graves', 'frequencias_ocorrencias', 'rotas_casos_fatais_excursao'])
+    
+  try:
+    conn = create_or_connect_database()
+  except ValueError as e:
+    st.write(f"Erro ao conectar ao banco de dados: {str(e)}")
+    return
 
   if conn is None:
     st.write("Verifique o banco de dados")
