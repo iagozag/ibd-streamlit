@@ -1,5 +1,3 @@
-%%writefile app.py
-
 import io
 import sqlite3
 import pandas as pd
