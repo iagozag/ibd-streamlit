@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 def create_or_connect_database():
-  conn = sqlite3.connect('/tmp/consult.db')
+  conn = sqlite3.connect('consult.db')
   cursor = conn.cursor()
 
   tables = ['OCORRENCIA', 'ACIDENTE', 'AERODROMO', 'AERONAVE', 'DESCRICAO', 'LOCAL']
