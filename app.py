@@ -1,11 +1,17 @@
+%%writefile app.py
+
 import io
 import sqlite3
 import pandas as pd
 import streamlit as st
 
 def create_or_connect_database():
-  conn = sqlite3.connect('consult.db')
+  conn = sqlite3.connect('/tmp/consult.db')
   cursor = conn.cursor()
+
+  f = io.open('./tabelas.sql', 'r', encoding='utf-8')
+  sql = f.read()
+  cursor.executescript(sql)
 
   tables = ['OCORRENCIA', 'ACIDENTE', 'AERODROMO', 'AERONAVE', 'DESCRICAO', 'LOCAL']
   for table in tables:
