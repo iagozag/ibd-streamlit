@@ -13,6 +13,7 @@ def create_or_connect_database():
     cursor.executescript(sql)
   except sqlite3.Error as e:
     print("SQLite error:", e)
+    print("SQL query:", sql)
 
   tables = ['OCORRENCIA', 'ACIDENTE', 'AERODROMO', 'AERONAVE', 'DESCRICAO', 'LOCAL']
   for table in tables:
