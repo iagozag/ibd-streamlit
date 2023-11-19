@@ -25,7 +25,7 @@ def create_or_connect_database():
 def main():
   st.title("Ocorrências Aeronáuticas")
 
-  block_op = st.selectbox('Selecione a consulta: ', ['ano_morte_tripulantes', 'regiao_ocorrencia_acidentes', 'fabricantes_falha_componentes', 'categ_aeronaves_mais_trip_ilesos', 'horarios_maior_ocorrencia', 'aerodromo_acidentes_mais_graves', 'frequencias_ocorrencias', 'rotas_casos_fatais_excursao'])
+  block_op = st.selectbox('Selecione a consulta: ', ['ano_morte_tripulantes', 'regiao_ocorrencia_acidentes', 'fabricantes_falha_componentes', 'categ_aeronaves_mais_trip_ilesos', 'horarios_maior_ocorrencia', 'aerodromo_acidentes_mais_graves', 'frequencias_ocorrencias', 'rotas_casos_fatais_excursao', 'formacao_de_gelo', 'tipos_ocorrencias_horario_tarde'])
     
   try:
     conn = create_or_connect_database()
@@ -161,6 +161,40 @@ def main():
       GROUP BY Aerodromo_de_Destino, Aerodromo_de_Origem
       ORDER BY Numero_de_Ocorrencias DESC
       LIMIT 10;
+    """
+    df = pd.read_sql_query(query, conn)
+    df
+
+  if block_op == 'formacao_de_gelo':
+    query = """
+      SELECT OCORRENCIA.ID, DESCRICAO.Descricao_do_tipo, OCORRENCIA.Data_da_ocorrencia, OCORRENCIA.Hora_da_ocorrencia, OCORRENCIA.Historico
+      FROM
+          OCORRENCIA
+      JOIN
+          DESCRICAO ON OCORRENCIA.ID = DESCRICAO.ID
+      WHERE Tipo_de_ocorrencia = 'ICE' AND Classificacao_da_ocorrencia = 'Incidente Grave'
+      ORDER BY Data_da_Ocorrencia DESC
+    """
+    df = pd.read_sql_query(query, conn)
+    df
+
+  if block_op == 'tipos_ocorrencias_horario_tarde':
+    query = """
+      SELECT
+        Intervalo_Horario, DESCRICAO.Descricao_do_tipo, COUNT(DESCRICAO.Descricao_do_tipo) AS Tipo_count
+      FROM (
+        SELECT OCORRENCIA.ID,
+               CASE
+                 WHEN strftime('%H:%M', "Hora_da_Ocorrencia") BETWEEN '12:00' AND '17:59' THEN '12:00 - 17:59'
+                 ELSE 'Nulo'
+               END AS Intervalo_Horario
+        FROM OCORRENCIA
+      ) AS SUBQUERY
+      NATURAL JOIN
+        DESCRICAO
+      WHERE Intervalo_Horario <> 'Nulo'
+      GROUP BY DESCRICAO.Descricao_do_tipo
+      ORDER BY Tipo_count DESC
     """
     df = pd.read_sql_query(query, conn)
     df
